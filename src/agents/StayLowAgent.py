@@ -1,8 +1,11 @@
-import random
 from .Agent import Agent
 
 
 class StayLowAgent(Agent):
+    """This agent picks whichever column has the fewest pieces in it.
+
+    If multiple columns are tied for the fewest number of pieces, the leftmost column is chosen.
+    """
 
     def step(self, game_state, allowed_actions):
         num_columns = len(game_state[0])

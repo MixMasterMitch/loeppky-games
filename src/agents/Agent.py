@@ -4,10 +4,11 @@ class Agent:
     name: str
     """Name assigned to this particular agent when it is created. This should only be set by the game engine."""
 
-    def init(self) -> None:
+    def init(self, is_first: bool) -> None:
         """This function is called before each game is started.
 
         This can be used to reset any state saved during execution of the game.
+        :param is_first: True if this agent will be going first. False if the opponent will be going first.
         """
         pass
 

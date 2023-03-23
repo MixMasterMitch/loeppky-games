@@ -1,5 +1,28 @@
 # loeppky-games
 
+## The Game
+The game is [Connect 4](https://en.wikipedia.org/wiki/Connect_Four).
+
+### Tournament Rules
+
+Running the `main.py` script executes a tournament between the specified agents. The tournament is executed as a round-robin tournament where each agent plays a match of n games against every other agent.
+The winner of each match is the agent of the pairing that gets the most game wins in the match. So if Agent1 plays a match of 7 games against Agent2 and Agent1 wins 4 of the games, then Agent1 is the winner of the match. Once an agent has won over half of the total number of games (e.g. 4 game wins in a 7 game match), the match is concluded. The agent that goes first is randomly selected before each game.
+The winner of the tournament is the agent with the most match wins. 
+
+#### Match Tiebreakers
+If multiple agents are tied on match wins, the tiebreaker is total game wins. If there is still a tie, the tournament is re-run until a winner is decided. The randomness of which player starts each game, should prevent a stalemate.
+
+#### Game Tiebreaker
+If a game ends in a draw (i.e. the board is filled with no winner), the game is re-run. If there is another draw on the second attempt, the winner is chosen randomly.
+
+#### Limits
+Each agent will be given 1 second of wall-clock time to execute each turn and pick a column to place a piece in. If the agent times out taking its turn, it forfeits the game.
+This timeout is subject to the context of the execution (computer hardware, other processes running, etc.), but assume the tournament will be run on an ARM based Mac with no other processes running.
+
+Note: the execution timeout is disabled when running the debugger.
+
+There is currently no limit enforced on memory usage and threads. But please do not use more than 1MB of memory or any additional threads.
+
 ## Project Setup
 All the instructions assume PyCharm is being used as the IDE. 
 Perform the following steps in order to set up PyCharm and run the source code:
@@ -54,14 +77,12 @@ Process finished with exit code 0
 Wow! Doing pretty well for a one line implementation!
 
 ### Controlling the Tournament
-Running `main.py` executes a tournament between the agents. The tournament is executed as a round-robin tournament where each agent plays a match of n games against every other agent.
-The winner of the match is the agent of the pairing that gets the most game wins in the match. So if Agent1 plays a match of 7 games against Agent2 and Agent1 wins 5 of the games, then Agent1 is the winner of the match.
-The winner of the tournament is the agent with the most match wins. If multiple agents are tied on match wins, the tiebreaker is total game wins. For this reason, all games in a match are played, even if an agent has already won the match.
-
-We have already seen how the `TOURNAMENT_AGENTS` can be modified to control which agents are used in the tournament. There are two additional variables that can be
+We have already seen how the `TOURNAMENT_AGENTS` can be modified to control which agents are used in the tournament. There are some additional variables that can be
 controlled to adjust the tournament execution. The first is `GAMES_PER_MATCH`. As the name suggests, this controls how many games are played in each match. This should always be an odd number to avoid ties.
 The other variable is `GAME_STEP_DELAY`. This controls how long to delay between executing each game step. If the value is greater than 0, a GUI will also be rendered on each step to show the current state of the game.
 This is useful for visually inspecting the behavior of the agents.
+
+The step execution timeout can also be adjusted by modifying `STEP_TIMEOUT`. Modifying this should not be necessary unless you want to test out a slower algorithm during development.
 
 ### Implementing an Agent
 Back in your new agent file, we can start implementing the agent. Technically, your new agent is a child class of the `Agent` base class, meaning we are using Object-Oriented programming. However, the usage here is simple enough that you do not need to know anything about OO programming to be successful in implementing an agent.
