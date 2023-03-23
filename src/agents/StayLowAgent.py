@@ -1,4 +1,5 @@
-from .Agent import Agent
+from src.agents import Agent
+from src import Board, CellState
 
 
 class StayLowAgent(Agent):
@@ -7,15 +8,14 @@ class StayLowAgent(Agent):
     If multiple columns are tied for the fewest number of pieces, the leftmost column is chosen.
     """
 
-    def step(self, game_state, allowed_actions):
-        num_columns = len(game_state[0])
-        column_chip_counts = [0] * num_columns
+    def step(self, board: Board) -> int:
+        column_chip_counts = [0] * board.columns_count
         # Count the number of chips in each column
-        for row in game_state:
-            for column_index, cell in enumerate(row):
+        for row in range(board.rows_count):
+            for col in range(board.columns_count):
                 #  Check if the cell is occupied
-                if cell[0] == 1 or cell[1] == 1:
-                    column_chip_counts[column_index] += 1
+                if board.get_cell_state(row, col) != CellState.EMPTY:
+                    column_chip_counts[col] += 1
 
         # Find the column with the lowest chip count
         min_column_index = None

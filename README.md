@@ -42,12 +42,13 @@ Add a new file in the `src/agents` directory named `<Name>Agent.py`, replacing `
 
 Copy and paste the following code into the new agent file:
 ```python
-from .Agent import Agent
+from src.agents import Agent
+from src import Board, CellState
 
 
 class <Name>Agent(Agent):
 
-    def step(self, game_state, allowed_actions):
+    def step(self, board: Board) -> int:
         # Implementation goes here
         return 0
 ```
@@ -67,8 +68,8 @@ TOURNAMENT_AGENTS: list[str] = [
 Now run the `main.py` file and observe the output. The output should be something like:
 ```text
 ================================
-Agent RandomAgent-1 won 0 matches and 63 games
-Agent TestAgent-1 won 1 matches and 937 games
+Agent RandomAgent-1 won 0 matches and 40 games
+Agent TestAgent-1 won 1 matches and 501 games
 ================================
 TestAgent-1 WINS!
 
@@ -88,53 +89,60 @@ The step execution timeout can also be adjusted by modifying `STEP_TIMEOUT`. Mod
 Back in your new agent file, we can start implementing the agent. Technically, your new agent is a child class of the `Agent` base class, meaning we are using Object-Oriented programming. However, the usage here is simple enough that you do not need to know anything about OO programming to be successful in implementing an agent.
 The important thing is that you implement the `step` method (i.e. function). The game engine calls the `step` method whenever it wants the agent to play another piece. So the `step` method receives the current game state as input and should return a column index to place a piece in. More specifically, the `step` method has the following input parameters:
 * `self` - This is the current instance of your agent class. You can safely ignore this; it is for OO programming.
-* `game_state` - This is the current state of the game. It is effectively two planes: a 2D grid of where the current agent's pieces are, and a 2D grid of where the opponent agent's pieces are. More on this later.
-* `allowed_actions` - This an array of 7 (number of rows) 1's or 0's indicating if a piece is allowed to go in each column or not (i.e. if the column is full). A 1 indicates a piece can go in that column, and a 0 indicates that it cannot. This information can be derived from the `game_state`, but is provided for convenience.
+* `board` - This is the current state of the game. It is effectively a 2D grid of the board with a state for each cell (empty, our piece, opponent piece). More on this later.
 
-The `self` method needs to return an `int` value from 0 to 6 indicating the index of the column to place the piece in. If an invalid index is returned (i.e. if the column is full), then the agent will be disqualified and lose the round.
+The `step` method needs to return an `int` value from 0 to 6 indicating the index of the column to place the piece in. If an invalid index is returned (i.e. if the column is full), then the agent will be disqualified and lose the round.
 
 It is likely that you will want to create utility functions. You can define these before the class definition and call them from the `step` method. For example:
 ```python
-from .Agent import Agent
+from src.agents import Agent
+from src import Board, CellState
 
-def is_cell_occupied(game_state, row, col):
-    cell = game_state[row][col]
-    return cell[0] == 1 or cell[1] == 1
+def is_cell_occupied(board: Board, row: int, col: int) -> bool:
+    cell_state = board.get_cell_state(row, col)
+    return cell_state != CellState.EMPTY
 
 class SuperCoolAgent(Agent):
 
-    def step(self, game_state, allowed_actions):
+    def step(self, board: Board) -> int:
         # Implementation goes here
-        return 0 if is_cell_occupied(game_state, 0, 0) else 1
+        return 0 if is_cell_occupied(board, 0, 0) else 1
 ```
 
-#### Game State
-The "observation space" (i.e. game state) is also described in some detail [here](https://pettingzoo.farama.org/environments/classic/connect_four/).
+#### Game State / Board
+The `board` object provides functions and properties for accessing the current game state.
 
-As an example, if the current board was like this:
+For illustrative purposes, lets assume the board represents the following state (X's are our pieces, and O's are the opponent's pieces):
 ```text
----------
-|       |
-|       |
-|       |
-|     B |
-|B    R |
-|RB R B |
----------
+-----------------
+| O             |
+| X             |
+| O             |
+| X     O O   O |
+| X O O X O X X |
+| O X X O X X O |
+-----------------
 ```
 
-Then the `game_state` would be:
-```text
-[
-  [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
-  [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
-  [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
-  [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 1], [0, 0]],
-  [[0, 1], [0, 0], [0, 0], [0, 0], [0, 0], [1, 0], [0, 0]],
-  [[1, 0], [0, 1], [0, 0], [1, 0], [0, 0], [0, 1], [0, 0]],
-]
+The `get_cell_state` function returns the current state at a given row and column (note that row 0 represents the top row). So calling `board.get_cell_state(3, 6)` in this example should return the state `OPPONENT_PIECE`. You can use the state as follows:
+```python
+cell_state = board.get_cell_state(3, 6)
+is_empty = cell_state == CellState.EMPTY # False
+is_ours = cell_state == CellState.OUR_PIECE # False
+is_opponents = cell_state == CellState.OPPONENT_PIECE # True
 ```
-Note that row 0 refers to the top of the game board, not the bottom.
+
+The `is_column_full` function returns `True` if there are no open spaces in the column. So calling `board.is_column_full(0)` in this example should return `True`.
+
+The `rows_count` and `columns_count` return the number of rows and columns respectively. This can be useful for iterating through every cell. For example:
+```python
+for row in range(board.rows_count):
+  for col in range(board.columns_count):
+    cell_state = board.get_cell_state(row, col)
+    is_cell_empty = cell_state == CellState.EMPTY
+```
+
+Finally, you can print the board state to the console using `print(board)` and it will output something like the example board shown above.
 
 ### Tips
 1. You can create multiple agents and have them play against each other to make sure your final agent is not susceptible to specific opposing strategies.

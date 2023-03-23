@@ -1,6 +1,7 @@
 import math
 import signal
 import sys
+from functools import cmp_to_key
 from typing import Mapping
 from pettingzoo.classic import connect_four_v3
 import time
@@ -8,7 +9,8 @@ import random
 import os
 import importlib
 from itertools import combinations
-from agents import Agent
+from src.agents import Agent
+from src import Board
 
 TOURNAMENT_AGENTS: list[str] = [
     "RandomAgent",
@@ -31,7 +33,7 @@ GAMES_PER_MATCH: int = 1001
 This should be an odd number to avoid ties.
 """
 
-GAME_STEP_DELAY: float = 0.1
+GAME_STEP_DELAY: float = 0
 """Sleep time (in seconds) between each step of each game.
 
 Set this to a higher value to be able to watch the game execution. If this is set to 0, then the game state will not be
@@ -61,7 +63,7 @@ def import_agents() -> Mapping[str, type[Agent]]:
             file = os.path.splitext(filename)[0]
             if file == '__init__' or file == 'Agent':
                 continue
-            module_name = f"agents.{file}"
+            module_name = f"src.agents.{file}"
             agent_name = file
             agent_class = import_agent(module_name, agent_name)
             print(f"  {agent_class.__name__}")
@@ -113,14 +115,19 @@ def run_game(env, agent_1: Agent, agent_2: Agent) -> Agent:
         if termination:
             env.step(None)
             continue
+        board = Board(observation['observation'])
         try:
             signal.signal(signal.SIGALRM, timeout_handler)
             signal.setitimer(signal.ITIMER_REAL, STEP_TIMEOUT)
-            action = agent.step(observation['observation'], observation['action_mask'])
+            action = agent.step(board)
             signal.setitimer(signal.ITIMER_REAL, 0)
         except TimeoutError:
             print(f"[WARNING] {agent.name} failed to pick an action within {STEP_TIMEOUT} seconds"
                   f" and forfeits the game.")
+            winner = agent_2 if agent == agent_1 else agent_1
+            break
+        if action < 0 or action >= len(observation['action_mask']) or observation['action_mask'][action] != 1:
+            print(f"[WARNING] {agent.name} failed to pick a legal action and forfeits the game. Selected: {action}")
             winner = agent_2 if agent == agent_1 else agent_1
             break
         env.step(action)
@@ -191,6 +198,16 @@ def run_roundrobin(agents: list[Agent]) -> None:
         match_wins[winner.name] += 1
         print(f"{winner.name} is the winner of the match")
 
+    max_agent_name_length = 0
+    for agent in agents:
+        max_agent_name_length = max(max_agent_name_length, len(agent.name))
+
+    def compare_agents(a: Agent, b: Agent) -> int:
+        match_wins_diff = match_wins.get(a.name, 0) - match_wins.get(b.name, 0)
+        return match_wins_diff if match_wins_diff != 0 else game_wins.get(a.name, 0) - game_wins.get(b.name, 0)
+
+    agents = sorted(agents, key=cmp_to_key(compare_agents), reverse=True)
+
     print("================================")
     for agent in agents:
         num_match_wins = 0
@@ -199,7 +216,7 @@ def run_roundrobin(agents: list[Agent]) -> None:
         num_game_wins = 0
         if agent.name in game_wins:
             num_game_wins = game_wins[agent.name]
-        print(f"Agent {agent.name} won {num_match_wins} matches and {num_game_wins} games")
+        print(f"Agent {agent.name.ljust(max_agent_name_length)} won {num_match_wins} matches and {num_game_wins} games")
     print("================================")
 
     # Find winner of most matches

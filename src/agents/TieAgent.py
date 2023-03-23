@@ -1,6 +1,7 @@
 import math
 
-from .Agent import Agent
+from src.agents import Agent
+from src import Board
 
 
 class TieAgent(Agent):
@@ -12,10 +13,9 @@ class TieAgent(Agent):
         self.turn = 0
         self.is_first = is_first
 
-
-    def step(self, game_state, allowed_actions):
+    def step(self, board: Board) -> int:
         base_col = math.floor(self.turn / 3) * 2
-        if (self.is_first):
+        if self.is_first:
             base_col += 1
         action = base_col % 7
         self.turn += 1

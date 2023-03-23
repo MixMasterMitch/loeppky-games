@@ -1,13 +1,14 @@
 import random
-from .Agent import Agent
+from src.agents import Agent
+from src import Board
 
 
 class RandomAgent(Agent):
     """This agent randomly picks one of the allowed actions."""
 
-    def step(self, game_state, allowed_actions_mask):
+    def step(self, board: Board) -> int:
         allowed_actions = []
-        for index, value in enumerate(allowed_actions_mask):
-            if value == 1:
-                allowed_actions.append(index)
+        for col in range(board.columns_count):
+            if not board.is_column_full(col):
+                allowed_actions.append(col)
         return random.choice(allowed_actions)
