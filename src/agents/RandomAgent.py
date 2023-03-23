@@ -1,13 +1,10 @@
 import random
+from .Agent import Agent
 
 
-class RandomAgent:
-    @staticmethod
-    def init():
-        print("Initialized agent")
+class RandomAgent(Agent):
 
-    @staticmethod
-    def step(game_state, allowed_actions_mask):
+    def step(self, game_state, allowed_actions_mask):
         # Randomly picks one of the allowed actions
         allowed_actions = []
         for index, value in enumerate(allowed_actions_mask):

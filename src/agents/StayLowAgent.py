@@ -1,13 +1,10 @@
 import random
+from .Agent import Agent
 
 
-class StayLowAgent:
-    @staticmethod
-    def init():
-        print("Initialized agent")
+class StayLowAgent(Agent):
 
-    @staticmethod
-    def step(game_state, allowed_actions):
+    def step(self, game_state, allowed_actions):
         num_columns = len(game_state[0])
         column_chip_counts = [0] * num_columns
         # Count the number of chips in each column
