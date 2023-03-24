@@ -67,9 +67,10 @@ TOURNAMENT_AGENTS: list[str] = [
 ```
 Now run the `main.py` file and observe the output. The output should be something like:
 ```text
+...
 ================================
-Agent RandomAgent-1 won 0 matches and 40 games
-Agent TestAgent-1 won 1 matches and 501 games
+Agent TestAgent-1   won 1 matches and 501 games
+Agent RandomAgent-1 won 0 matches and 188 games
 ================================
 TestAgent-1 WINS!
 
@@ -112,16 +113,16 @@ class SuperCoolAgent(Agent):
 #### Game State / Board
 The `board` object provides functions and properties for accessing the current game state.
 
-For illustrative purposes, lets assume the board represents the following state (X's are our pieces, and O's are the opponent's pieces):
+For illustrative purposes, lets assume the board represents the following state (`X`'s are our pieces, and `O`'s are the opponent's pieces):
 ```text
------------------
-| O             |
-| X             |
-| O             |
-| X     O O   O |
-| X O O X O X X |
-| O X X O X X O |
------------------
+---------------------
+[O][ ][ ][ ][ ][ ][ ]
+[X][ ][ ][ ][ ][ ][ ]
+[O][ ][ ][ ][ ][ ][ ]
+[X][ ][ ][O][O][ ][O]
+[X][O][O][X][O][X][X]
+[O][X][X][O][X][X][O]
+---------------------
 ```
 
 The `get_cell_state` function returns the current state at a given row and column (note that row 0 represents the top row). So calling `board.get_cell_state(3, 6)` in this example should return the state `OPPONENT_PIECE`. You can use the state as follows:
@@ -144,8 +145,14 @@ for row in range(board.rows_count):
 
 Finally, you can print the board state to the console using `print(board)` and it will output something like the example board shown above.
 
+### Agent Tester
+Sometimes it is helpful to test out the agent with a particular input game state. The `test.py` script helps do exactly that. In the `test.py` script, set the `AGENT_NAME` variable to the name of the agent you want to test and edit the `BOARD_STRING` variable to create the desired input board state. Note that the board string format is the same as the output of `print(board)` with `X`'s being the agent's pieces and `O`'s being the opponent's.
+
+Then run the `test.py` script (or run it with the debugger) to invoke the `step` function of the specified agent with the specified board.
+
 ### Tips
 1. You can create multiple agents and have them play against each other to make sure your final agent is not susceptible to specific opposing strategies.
+2. While debugging, you can add a `print(board)` call at the start of the `step` function. When you observe your agent making an unexpected move, grab the corresponding logged board string and paste it into `test.py` to repeatably test the agent with that particular game state.
 
 ## Submitting an Agent for Competition
 TODO

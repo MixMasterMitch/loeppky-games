@@ -51,11 +51,11 @@ class Board:
         self._game_state[row][col] = cell
 
     def __str__(self):
-        divider = ''.ljust(self.columns_count * 2 + 3, '-') + '\n'
+        divider = ''.ljust(self.columns_count * 3, '-') + '\n'
         output = divider
         for row in range(self.rows_count):
-            output += '| '
             for col in range(self.columns_count):
+                output += '['
                 cell_state = self.get_cell_state(row, col)
                 if cell_state == CellState.OUR_PIECE:
                     output += 'X'
@@ -63,7 +63,28 @@ class Board:
                     output += 'O'
                 else:
                     output += ' '
-                output += ' '
-            output += '|\n'
+                output += ']'
+            output += '\n'
         output += divider
         return output
+
+    @classmethod
+    def from_board_string(cls, board_string: str):
+        """Parses a game board string back into a board."""
+        game_state = []
+        for row_string in board_string.split('\n'):
+            if not row_string.startswith("["):
+                continue
+            row = []
+            game_state.append(row)
+            for i in range(1, len(row_string)):
+                char = row_string[i]
+                if char == "[" or char == "]":
+                    continue
+                cell = [0, 0]
+                if char == "X":
+                    cell[0] = 1
+                if char == "O":
+                    cell[1] = 1
+                row.append(cell)
+        return cls(game_state)
